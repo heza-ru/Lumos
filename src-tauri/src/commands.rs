@@ -74,8 +74,18 @@ pub fn toggle_overlay(state: State<SharedState>) -> bool {
 }
 
 #[tauri::command]
-pub fn toggle_click_through(state: State<SharedState>) -> bool {
-    toggle_click_through_inner(&state)
+pub fn toggle_click_through(
+    state: State<SharedState>,
+    #[cfg(target_os = "macos")]
+    overlay: State<crate::overlay::OverlayRef>,
+) -> bool {
+    let enabled = toggle_click_through_inner(&state);
+    #[cfg(target_os = "macos")]
+    {
+        let panel = *overlay.0.lock().unwrap();
+        unsafe { crate::overlay::set_click_through(panel, enabled) };
+    }
+    enabled
 }
 
 #[derive(Serialize)]

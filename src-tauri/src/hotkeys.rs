@@ -49,7 +49,18 @@ pub fn dispatch_action(action: HotkeyAction, state: &SharedState) {
         HotkeyAction::ToggleOverlay      => { s.overlay_visible = !s.overlay_visible; }
         HotkeyAction::ClearAll           => s.drawing.clear(),
         HotkeyAction::Undo               => s.drawing.undo(),
-        HotkeyAction::ToggleClickThrough => { s.click_through = !s.click_through; }
+        HotkeyAction::ToggleClickThrough => {
+            s.click_through = !s.click_through;
+            let enabled = s.click_through;
+            let ptr = s.overlay_panel_ptr;
+            drop(s);
+            #[cfg(target_os = "macos")]
+            if ptr != 0 {
+                let panel = ptr as *mut objc::runtime::Object;
+                unsafe { crate::overlay::set_click_through(panel, enabled) };
+            }
+            return;
+        }
         HotkeyAction::ToolPen            => s.drawing.active_tool = ToolKind::Pen,
         HotkeyAction::ToolHighlighter    => s.drawing.active_tool = ToolKind::Highlighter,
         HotkeyAction::ToolArrow          => s.drawing.active_tool = ToolKind::Arrow,
@@ -134,5 +145,16 @@ mod tests {
         assert_eq!(state.lock().drawing.active_tool, ToolKind::Highlighter);
         dispatch_action(HotkeyAction::ToolPen, &state);
         assert_eq!(state.lock().drawing.active_tool, ToolKind::Pen);
+    }
+
+    #[test]
+    fn dispatch_toggle_click_through_flips_state() {
+        let state = crate::state::new_shared_state();
+        // starts true
+        assert!(state.lock().click_through);
+        dispatch_action(HotkeyAction::ToggleClickThrough, &state);
+        assert!(!state.lock().click_through);
+        dispatch_action(HotkeyAction::ToggleClickThrough, &state);
+        assert!(state.lock().click_through);
     }
 }

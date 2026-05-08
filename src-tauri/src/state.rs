@@ -142,17 +142,21 @@ pub struct AppState {
     pub cursor_pos:       Point,
     pub spotlight_active: bool,
     pub zoom_active:      bool,
+    /// Raw NSPanel pointer as usize for click-through sync from hotkeys.
+    /// Only set on macOS after overlay creation; 0 means unset.
+    pub overlay_panel_ptr: usize,
 }
 
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            overlay_visible:  false,
-            click_through:    true,
-            drawing:          DrawingState::default(),
-            cursor_pos:       Point { x: 0.0, y: 0.0 },
-            spotlight_active: false,
-            zoom_active:      false,
+            overlay_visible:   false,
+            click_through:     true,
+            drawing:           DrawingState::default(),
+            cursor_pos:        Point { x: 0.0, y: 0.0 },
+            spotlight_active:  false,
+            zoom_active:       false,
+            overlay_panel_ptr: 0,
         }
     }
 }
@@ -161,12 +165,13 @@ pub type SharedState = Arc<Mutex<AppState>>;
 
 pub fn new_shared_state() -> SharedState {
     Arc::new(Mutex::new(AppState {
-        overlay_visible:  false,
-        click_through:    true,
-        drawing:          DrawingState::default(),
-        cursor_pos:       Point { x: 0.0, y: 0.0 },
-        spotlight_active: false,
-        zoom_active:      false,
+        overlay_visible:   false,
+        click_through:     true,
+        drawing:           DrawingState::default(),
+        cursor_pos:        Point { x: 0.0, y: 0.0 },
+        spotlight_active:  false,
+        zoom_active:       false,
+        overlay_panel_ptr: 0,
     }))
 }
 

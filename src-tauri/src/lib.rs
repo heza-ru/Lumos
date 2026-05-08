@@ -6,6 +6,7 @@ pub mod hotkeys;
 pub mod tools;
 
 use state::new_shared_state;
+use tauri::Manager;
 
 pub fn run() {
     let app_state = new_shared_state();
@@ -46,10 +47,11 @@ pub fn run() {
                 // Start the 120fps render loop on a dedicated background thread.
                 renderer::start_render_loop(panel, app_state_for_setup.clone(), screen_w, screen_h, scale);
 
-                let overlay_ref = overlay::OverlayRef::new(panel);
-                // Store in app state so commands can access it later
-                // (In Task 10 we'll wire it into the Tauri managed state properly)
-                std::mem::forget(overlay_ref); // keep panel alive, wired properly in Task 10
+                // Store the raw panel pointer in AppState so hotkeys can sync ignoresMouseEvents.
+                app_state_for_setup.lock().overlay_panel_ptr = panel as usize;
+
+                // Manage OverlayRef in Tauri state so Tauri commands can access the panel.
+                app.manage(overlay::OverlayRef::new(panel));
                 unsafe { overlay::show_overlay(panel) };
 
                 // Install CGEventTap for mouse capture in draw mode.
