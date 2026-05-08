@@ -1,15 +1,38 @@
-console.log('[DRAWPEN]: Extended toolbar page loading...');
+console.log('[LUMOS]: Extended toolbar page loading...');
 
-const toolbar = document.getElementById('toolbar');
-const closeAppButton = toolbar.querySelector('.toolbar__close');
-const switchToDrawButtons = toolbar.querySelectorAll('.toolbar__main-button button, .toolbar__slider');
-
-closeAppButton.addEventListener('click', () => {
-  window.electronAPI.invokeCloseApp();
+// ── Color dots ─────────────────────────────────────────────────────────────
+const colorDots = document.querySelectorAll('.color-dot');
+colorDots.forEach(dot => {
+  dot.addEventListener('click', () => {
+    const idx = parseInt(dot.dataset.index, 10);
+    // Update active state visually
+    colorDots.forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+    // Notify main process (stores color preference)
+    window.electronAPI.invokeSetPointerColor(idx);
+  });
 });
 
-switchToDrawButtons.forEach(button => {
-  button.addEventListener('click', () => {
-    window.electronAPI.invokeDrawMode();
+// ── Tool buttons ────────────────────────────────────────────────────────────
+const toolBtns = document.querySelectorAll('.tool-btn[data-tool]');
+toolBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    // Update active state visually
+    toolBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    // Enter draw mode with this specific tool
+    window.electronAPI.invokeDrawModeWithTool(btn.dataset.tool);
   });
+});
+
+// ── Clear button ─────────────────────────────────────────────────────────────
+// Clear enters draw mode then immediately clears — handled via entering draw mode
+// (clearing in pointer mode isn't meaningful without the canvas visible)
+document.getElementById('clearBtn')?.addEventListener('click', () => {
+  window.electronAPI.invokeDrawMode();
+});
+
+// ── Close button ─────────────────────────────────────────────────────────────
+document.getElementById('closeBtn')?.addEventListener('click', () => {
+  window.electronAPI.invokeCloseApp();
 });

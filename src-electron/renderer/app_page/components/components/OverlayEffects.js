@@ -82,25 +82,33 @@ const OverlayEffects = ({
         ctx.restore();
       }
 
-      // ── Cursor highlight ───────────────────────────────────────
+      // ── Cursor highlight (Presentify-style: big pink hollow ring) ─────────────
       if (cursorHighlight !== 'none') {
         ctx.save();
-        if (cursorHighlight === 'glow') {
-          // Radial glow: 3 concentric rings
+        if (cursorHighlight === 'ring') {
+          // Presentify default: large hollow ring with soft glow
+          // Outer glow
+          ctx.beginPath();
+          ctx.arc(x, y, 26, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255, 105, 180, 0.25)'; // pink glow
+          ctx.lineWidth = 8;
+          ctx.stroke();
+          // Main ring — big, hot pink, hollow
+          ctx.beginPath();
+          ctx.arc(x, y, 22, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255, 80, 160, 0.85)'; // hot pink like Presentify
+          ctx.lineWidth = 2.5;
+          ctx.stroke();
+        } else if (cursorHighlight === 'glow') {
+          // Radial glow variant
           for (let i = 0; i < 3; i++) {
-            const r = 14 + i * 10;
-            const alpha = 0.14 - i * 0.04;
+            const r = 16 + i * 10;
+            const alpha = 0.16 - i * 0.04;
             ctx.beginPath();
             ctx.arc(x, y, r, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(82, 155, 224, ${alpha})`;
             ctx.fill();
           }
-        } else if (cursorHighlight === 'ring') {
-          ctx.beginPath();
-          ctx.arc(x, y, 18, 0, Math.PI * 2);
-          ctx.strokeStyle = 'rgba(82, 155, 224, 0.75)';
-          ctx.lineWidth = 2.5;
-          ctx.stroke();
         }
         ctx.restore();
       }

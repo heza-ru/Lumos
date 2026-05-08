@@ -165,6 +165,14 @@ const Application = (settings) => {
     window.electronAPI.onRefreshSettings(handleRefreshSettings);
     window.electronAPI.onUpdateToolbarPosition(handleUpdateToolbarPosition);
     window.electronAPI.onShowNotification(handleShowNotification);
+    window.electronAPI.onSelectTool((_event, tool) => {
+      setActiveTool(tool);
+      if (brushList.includes(tool)) setLastActivePen(tool);
+      if (shapeList.includes(tool)) setToolbarLastActiveFigure(tool);
+    });
+    window.electronAPI.onSelectColor((_event, colorIndex) => {
+      setActiveColorIndex(colorIndex);
+    });
   }, []);
 
   const lastPasteAtRef = useRef(0);
@@ -285,6 +293,9 @@ const Application = (settings) => {
               points: activeFigure.points.map(p => [...p]) // Avoid mutation
             });
           }
+        } else {
+          // Presentify-style: C selects circle/oval tool
+          handleChangeTool('oval');
         }
 
         break;
@@ -376,6 +387,32 @@ const Application = (settings) => {
       }
       case 'e': {
         handleChangeTool('eraser');
+        break;
+      }
+      // Presentify-style single-key tool shortcuts
+      case 'f': {
+        if (!ctrlOrMeta) { handleChangeTool('pen'); }
+        break;
+      }
+      case 'w': {
+        if (!ctrlOrMeta) { handleToggleWhiteboard(); }
+        break;
+      }
+      // Color shortcuts 1-5 (Presentify: numbers select favorite colors)
+      case '1': { if (!ctrlOrMeta) { setActiveColorIndex(1); } break; } // Blue
+      case '2': { if (!ctrlOrMeta) { setActiveColorIndex(2); } break; } // Red
+      case '3': { if (!ctrlOrMeta) { setActiveColorIndex(3); } break; } // Green
+      case '4': { if (!ctrlOrMeta) { setActiveColorIndex(4); } break; } // Orange
+      case '5': { if (!ctrlOrMeta) { setActiveColorIndex(5); } break; } // White
+      // Line weight: [ decrease, ] increase (Presentify uses these)
+      case '[':
+      case 'bracketleft': {
+        if (!ctrlOrMeta) { setActiveWidthIndex(prev => Math.max(0, prev - 1)); }
+        break;
+      }
+      case ']':
+      case 'bracketright': {
+        if (!ctrlOrMeta) { setActiveWidthIndex(prev => Math.min(widthList.length - 1, prev + 1)); }
         break;
       }
       case 'arrowleft':

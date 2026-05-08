@@ -28,8 +28,8 @@ const KEY_Q                    = 'CmdOrCtrl+Q'
 const KEY_NULL                 = '[NULL]'
 
 const EXTENDED_TOOLBAR_WINDOW_MARGIN = 10
-const EXTENDED_TOOLBAR_WINDOW_WIDTH  = EXTENDED_TOOLBAR_WINDOW_MARGIN+80+17+5
-const EXTENDED_TOOLBAR_WINDOW_HEIGHT = EXTENDED_TOOLBAR_WINDOW_MARGIN+70+5
+const EXTENDED_TOOLBAR_WINDOW_WIDTH  = EXTENDED_TOOLBAR_WINDOW_MARGIN + 440 + EXTENDED_TOOLBAR_WINDOW_MARGIN
+const EXTENDED_TOOLBAR_WINDOW_HEIGHT = EXTENDED_TOOLBAR_WINDOW_MARGIN + 60 + EXTENDED_TOOLBAR_WINDOW_MARGIN
 
 let lastShortcutTime = 0;
 const throttleDelay = 250;
@@ -968,6 +968,28 @@ ipcMain.handle('set_disable_toolbar_in_pointer_mode', (_event, value) => {
 
   return null
 });
+
+ipcMain.handle('draw_mode_with_tool', (_event, tool) => {
+  rawLog('Draw mode with tool:', tool)
+  store.set('tool_bar_active_tool', tool)
+  enableDrawMode()
+  // Tell renderer to switch tool after it loads
+  setTimeout(() => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('select_tool', tool)
+    }
+  }, 150)
+  return null
+})
+
+ipcMain.handle('set_pointer_color', (_event, colorIndex) => {
+  rawLog('Setting pointer color:', colorIndex)
+  store.set('tool_bar_active_color_index', colorIndex)
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send('select_color', colorIndex)
+  }
+  return null
+})
 
 function refreshSettingsInRenderer() {
   mainWindow.webContents.send('refresh_settings', {

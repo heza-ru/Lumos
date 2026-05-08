@@ -2,161 +2,217 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Extended Toolbar</title>
+    <title>Lumos</title>
     <style>
       :root {
-        --toolbar-window-margin: 10px;
-        --pill-bg:     rgba(18, 18, 18, 0.84);
-        --pill-border: rgba(255, 255, 255, 0.18);
-        --pill-icon:   rgba(255, 255, 255, 0.65);
+        --m: 10px; /* window margin */
       }
 
       * { box-sizing: border-box; }
 
       html, body {
-        margin: 0;
-        width: 100%;
-        height: 100%;
+        margin: 0; width: 100%; height: 100%;
         background: transparent;
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
         -webkit-font-smoothing: antialiased;
+        user-select: none; -webkit-user-select: none;
       }
 
       button { background: none; border: none; padding: 0; cursor: pointer; }
       button:focus { outline: none; }
-      button svg   { pointer-events: none; }
+      button svg, button span { pointer-events: none; }
 
-      .toolbar__pill     { -webkit-app-region: drag; }
-      .toolbar__close,
-      .toolbar__draw-btn { -webkit-app-region: no-drag; }
-
-      .toolbar-extended {
+      /* ── Outer wrapper ── */
+      .strip-wrap {
         position: absolute;
-        top: var(--toolbar-window-margin);
-        left: var(--toolbar-window-margin);
+        top: var(--m); left: var(--m);
       }
 
-      /* ── Glass pill ── */
-      .toolbar__pill {
+      /* ── Main pill ── */
+      .strip {
         display: inline-flex;
         align-items: center;
         gap: 2px;
-        padding: 6px 8px;
+        padding: 7px 10px;
         border-radius: 100px;
-        background: var(--pill-bg);
+        background: rgba(16, 16, 16, 0.86);
         backdrop-filter: blur(20px) saturate(180%);
         -webkit-backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid var(--pill-border);
+        border: 1px solid rgba(255,255,255,0.16);
         box-shadow:
-          0 8px 32px rgba(0,0,0,0.45),
+          0 8px 32px rgba(0,0,0,0.5),
           inset 0 1px 0 rgba(255,255,255,0.12);
+        -webkit-app-region: drag;
         position: relative;
-        user-select: none;
-        -webkit-user-select: none;
       }
 
-      /* Top dome specular */
-      .toolbar__pill::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        border-radius: 100px;
+      /* top specular */
+      .strip::before {
+        content: ''; position: absolute; inset: 0; border-radius: 100px;
         background: radial-gradient(ellipse 70% 40% at 50% 0%,
-          rgba(255,255,255,0.12) 0%, transparent 70%);
+          rgba(255,255,255,0.11) 0%, transparent 70%);
         pointer-events: none;
       }
 
-      /* Drag dots */
-      .toolbar__draglines {
-        display: flex;
-        padding: 0 4px;
-        align-items: center;
+      /* ── Groups ── */
+      .group {
+        display: inline-flex; align-items: center; gap: 2px;
+        padding: 2px 4px; border-radius: 100px;
+        -webkit-app-region: no-drag;
       }
-      .draglines {
-        display: grid;
-        row-gap: 2px; column-gap: 2px;
-        grid-template-columns: repeat(2, min-content);
-      }
-      .draglines div {
-        width: 2px; height: 2px;
-        border-radius: 50%;
-        background-color: rgba(255,255,255,0.3);
+      .group-colors { gap: 5px; padding: 2px 6px; background: rgba(255,255,255,0.03); }
+      .group-tools  { gap: 1px; padding: 2px 3px; background: rgba(255,255,255,0.04); }
+      .group-util   { gap: 1px; padding: 2px 3px; background: rgba(255,255,255,0.03); }
+
+      .sep {
+        width: 1px; height: 18px; margin: 0 3px; flex-shrink: 0;
+        background: linear-gradient(to bottom,
+          transparent 0%, rgba(255,255,255,0.15) 25%,
+          rgba(255,255,255,0.15) 75%, transparent 100%);
       }
 
-      /* Draw mode button */
-      .toolbar__draw-btn {
-        width: 36px; height: 36px;
-        border-radius: 100px;
+      /* ── Color dots ── */
+      .color-dot {
+        width: 13px; height: 13px; border-radius: 50%;
+        border: 1.5px solid rgba(255,255,255,0.3); cursor: pointer;
+        transition: transform 0.12s cubic-bezier(0.34,1.56,0.64,1), border-color 0.1s;
+        -webkit-app-region: no-drag;
+      }
+      .color-dot:hover { transform: scale(1.2); }
+      .color-dot.active { border-color: rgba(255,255,255,0.85); transform: scale(1.22); }
+
+      /* ── Tool buttons ── */
+      .tool-btn {
+        width: 32px; height: 32px; border-radius: 100px;
         display: flex; align-items: center; justify-content: center;
-        color: var(--pill-icon);
-        transition: background 0.12s, color 0.12s,
-          transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+        color: rgba(255,255,255,0.55);
+        transition: background 0.1s, color 0.1s, transform 0.15s cubic-bezier(0.34,1.56,0.64,1);
+        -webkit-app-region: no-drag;
       }
-      .toolbar__draw-btn:hover {
-        background: rgba(255,255,255,0.12);
-        color: #fff;
-        transform: scale(1.08);
+      .tool-btn svg { width: 16px; height: 16px; }
+      .tool-btn:hover { background: rgba(255,255,255,0.11); color: rgba(255,255,255,0.95); transform: scale(1.1); }
+      .tool-btn.active {
+        background: rgba(255,255,255,0.17); color: #fff;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.2);
+        transform: scale(0.96);
       }
-      .toolbar__draw-btn svg { width: 20px; height: 20px; }
 
-      /* Close X — visible on hover */
-      .toolbar__close {
-        position: absolute;
-        top: -4px; left: -4px;
-        z-index: 1;
-        width: 16px; height: 16px;
-        border-radius: 50%;
+      /* ── Close X ── */
+      .close-btn {
+        position: absolute; top: -4px; left: -4px; z-index: 1;
+        width: 16px; height: 16px; border-radius: 50%;
         background: rgba(25,25,25,0.9);
         border: 1px solid rgba(255,255,255,0.2);
         display: flex; align-items: center; justify-content: center;
-        opacity: 0;
-        transition: opacity 0.15s;
+        opacity: 0; transition: opacity 0.15s;
+        -webkit-app-region: no-drag;
       }
-      .toolbar-extended:hover .toolbar__close { opacity: 1; }
-      .toolbar__close button {
-        display: flex; align-items: center; justify-content: center;
-      }
-      .toolbar__close svg { width: 9px; height: 9px; color: rgba(255,255,255,0.7); }
+      .strip-wrap:hover .close-btn { opacity: 1; }
+      .close-btn svg { width: 9px; height: 9px; color: rgba(255,255,255,0.7); }
     </style>
   </head>
 
   <body>
-    <aside id="toolbar" class="toolbar-extended">
+    <div class="strip-wrap">
 
-      <div class="toolbar__pill">
-        <div class="toolbar__draglines">
-          <div class="draglines">
-            <div></div><div></div>
-            <div></div><div></div>
-            <div></div><div></div>
-          </div>
+      <!-- Main pill -->
+      <div class="strip" id="strip">
+
+        <!-- Colors (Presentify: 5 favorite colors shown directly) -->
+        <div class="group group-colors" id="colorGroup">
+          <!-- color_rainbow -->
+          <div class="color-dot" data-index="0" style="background: conic-gradient(red,yellow,lime,aqua,blue,magenta,red);" title="Rainbow"></div>
+          <!-- color_blue -->
+          <div class="color-dot active" data-index="1" style="background:#529BE0;" title="Blue (1)"></div>
+          <!-- color_red -->
+          <div class="color-dot" data-index="2" style="background:#E05252;" title="Red (2)"></div>
+          <!-- color_green -->
+          <div class="color-dot" data-index="3" style="background:#52E06C;" title="Green (3)"></div>
+          <!-- color_orange -->
+          <div class="color-dot" data-index="4" style="background:#E0A552;" title="Orange (4)"></div>
+          <!-- color_white -->
+          <div class="color-dot" data-index="5" style="background:#fff;" title="White (5)"></div>
         </div>
 
-        <button class="toolbar__draw-btn" tabindex="-1" title="Draw Mode">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-            <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z"/>
-          </svg>
-        </button>
+        <div class="sep"></div>
 
-        <div class="toolbar__draglines">
-          <div class="draglines">
-            <div></div><div></div>
-            <div></div><div></div>
-            <div></div><div></div>
-          </div>
+        <!-- Tools (Presentify icons) -->
+        <div class="group group-tools" id="toolGroup">
+          <!-- Pen (F) -->
+          <button class="tool-btn active" data-tool="pen" title="Pen (F)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>
+            </svg>
+          </button>
+          <!-- Arrow (A) -->
+          <button class="tool-btn" data-tool="arrow" title="Arrow (A)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M7 7h10v10"/><path d="M7 17 17 7"/>
+            </svg>
+          </button>
+          <!-- Rectangle (R) -->
+          <button class="tool-btn" data-tool="rectangle" title="Rectangle (R)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="14" x="3" y="5" rx="2"/>
+            </svg>
+          </button>
+          <!-- Circle/Oval (C) -->
+          <button class="tool-btn" data-tool="oval" title="Circle (C)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <ellipse cx="12" cy="12" rx="10" ry="7"/>
+            </svg>
+          </button>
+          <!-- Text (T) -->
+          <button class="tool-btn" data-tool="text" title="Text (T)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/>
+            </svg>
+          </button>
+          <!-- Highlighter (H) -->
+          <button class="tool-btn" data-tool="highlighter" title="Highlighter (H)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/>
+            </svg>
+          </button>
+          <!-- Laser -->
+          <button class="tool-btn" data-tool="laser" title="Laser (L)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
+            </svg>
+          </button>
         </div>
-      </div>
 
-      <div class="toolbar__close">
+        <div class="sep"></div>
+
+        <!-- Utility -->
+        <div class="group group-util">
+          <!-- Eraser -->
+          <button class="tool-btn" data-tool="eraser" title="Eraser (X)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/>
+              <path d="M22 21H7"/><path d="m5 11 9 9"/>
+            </svg>
+          </button>
+          <!-- Clear all -->
+          <button class="tool-btn" id="clearBtn" title="Clear all (⌘K)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- .strip -->
+
+      <!-- Close X -->
+      <div class="close-btn" id="closeBtn">
         <button tabindex="-1">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
+          <svg viewBox="0 0 24 24">
             <path fill="currentColor" d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
           </svg>
         </button>
       </div>
 
-    </aside>
+    </div><!-- .strip-wrap -->
   </body>
 </html>

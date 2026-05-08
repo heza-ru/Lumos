@@ -19,4 +19,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onRefreshSettings: (callback) => ipcRenderer.on('refresh_settings', callback),
   onUpdateToolbarPosition: (callback) => ipcRenderer.on('update_toolbar_position', callback),
   onShowNotification: (callback) => ipcRenderer.on('show_notification', callback),
+  onSelectTool:  (callback) => ipcRenderer.on('select_tool',  callback),
+  onSelectColor: (callback) => ipcRenderer.on('select_color', callback),
 });
