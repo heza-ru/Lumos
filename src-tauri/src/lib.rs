@@ -30,6 +30,21 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 let panel = unsafe { overlay::create_overlay() };
+
+                // Get screen dimensions and scale for the render loop
+                let (screen_w, screen_h, scale) = unsafe {
+                    use objc::{class, msg_send, sel, sel_impl};
+                    use cocoa::foundation::NSRect;
+
+                    let screen: cocoa::base::id = msg_send![objc::class!(NSScreen), mainScreen];
+                    let frame: NSRect = msg_send![screen, frame];
+                    let scale: f64 = msg_send![screen, backingScaleFactor];
+                    (frame.size.width as i32, frame.size.height as i32, scale as f32)
+                };
+
+                // Start the 120fps render loop on a dedicated background thread.
+                renderer::start_render_loop(panel, app_state_for_setup.clone(), screen_w, screen_h, scale);
+
                 let overlay_ref = overlay::OverlayRef::new(panel);
                 // Store in app state so commands can access it later
                 // (In Task 10 we'll wire it into the Tauri managed state properly)
