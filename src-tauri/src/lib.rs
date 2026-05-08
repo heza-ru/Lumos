@@ -3,6 +3,7 @@ pub mod overlay;
 pub mod renderer;
 pub mod commands;
 pub mod hotkeys;
+pub mod tools;
 
 use state::new_shared_state;
 

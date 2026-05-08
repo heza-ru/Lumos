@@ -42,7 +42,21 @@ pub fn draw_stroke(canvas: &Canvas, stroke: &Stroke, alpha_override: Option<f32>
         ToolKind::Rectangle   => draw_rectangle(canvas, stroke),
         ToolKind::Ellipse     => draw_ellipse(canvas, stroke),
         ToolKind::Line        => draw_line_segment(canvas, stroke),
-        ToolKind::Laser       => draw_pen(canvas, stroke, alpha_override.unwrap_or(0.9)),
+        ToolKind::Laser       => {
+            let alpha = if let Some(a) = alpha_override {
+                a
+            } else {
+                let now_ms = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .unwrap_or_default()
+                    .as_millis() as u64;
+                let age_ms = now_ms.saturating_sub(stroke.created_at_ms);
+                crate::tools::laser::laser_alpha(age_ms, 2000)
+            };
+            if alpha > 0.0 {
+                draw_pen(canvas, stroke, alpha);
+            }
+        }
         ToolKind::Eraser      => {} // handled by removing strokes from state
         ToolKind::Text        => {} // handled in a later task
     }
@@ -251,5 +265,12 @@ mod tests {
         assert!((sc.g - (128.0 / 255.0)).abs() < 0.01);
         assert_eq!(sc.b, 0.0);
         assert!((sc.a - 1.0).abs() < 0.01);
+    }
+
+    #[test]
+    fn laser_alpha_integration_with_age() {
+        // Verify that laser_alpha produces expected values at boundaries
+        assert!((crate::tools::laser::laser_alpha(0, 2000) - 1.0).abs() < 0.01);
+        assert_eq!(crate::tools::laser::laser_alpha(2000, 2000), 0.0);
     }
 }
