@@ -34,6 +34,7 @@ import { MdOutlineClose } from "react-icons/md";
 import { FaFont } from "react-icons/fa6";
 import { LuSquareMousePointer } from "react-icons/lu";
 import FaMagicPaintBrush from "./components/icons/FaMagicPaintBrush.js";
+import OverlayEffects from './components/OverlayEffects.js';
 
 import {
   fadeOutDestroyAfterMs,
@@ -148,6 +149,15 @@ const Application = (settings) => {
   const [toastInfo, setToastInfo] = useState(null);
   const [fadeOpacity, setFadeOpacity] = useState(1.0);
 
+  const [spotlightActive, setSpotlightActive] = useState(false);
+  const [spotlightShape, setSpotlightShape] = useState('circle');
+  const [spotlightRadius, setSpotlightRadius] = useState(150);
+  const [cursorHighlight, setCursorHighlight] = useState('ring'); // 'none' | 'glow' | 'ring'
+  const [zoomActive, setZoomActive] = useState(false);
+  const [zoomFactor, setZoomFactor] = useState(2.5);
+  const [zoomRadius, setZoomRadius] = useState(90);
+  const mainCanvasRef = useRef(null);
+
   useEffect(() => {
     window.electronAPI.onResetScreen(handleReset);
     window.electronAPI.onToggleToolbar(handleToggleToolbar);
@@ -219,7 +229,23 @@ const Application = (settings) => {
     if (eventMatches(event, key_binding_make_screenshot)) {
       event.preventDefault();
       invokeMakeScreenshot();
+      // Also copy annotation canvas to clipboard if available
+      if (mainCanvasRef && mainCanvasRef.current) {
+        mainCanvasRef.current.toBlob(blob => {
+          if (blob) {
+            const item = new ClipboardItem({ 'image/png': blob });
+            navigator.clipboard.write([item]).catch(() => {});
+          }
+        });
+      }
       return
+    }
+
+    // Overlay feature shortcuts (Shift + key, no ctrl/meta)
+    if (!ctrlOrMeta) {
+      if (event.key === 's' && event.shiftKey) { setSpotlightActive(prev => !prev); return; }
+      if (event.key === 'g' && event.shiftKey) { setCursorHighlight(prev => prev === 'none' ? 'ring' : 'none'); return; }
+      if (event.key === 'z' && event.shiftKey) { setZoomActive(prev => !prev); return; }
     }
 
     // Static keyboard shortcuts
@@ -1561,6 +1587,18 @@ const Application = (settings) => {
             Icons={Icons}
           />
       }
+
+      <OverlayEffects
+        mouseCoordinates={mouseCoordinates}
+        spotlightActive={spotlightActive}
+        spotlightShape={spotlightShape}
+        spotlightRadius={spotlightRadius}
+        cursorHighlight={cursorHighlight}
+        zoomActive={zoomActive}
+        zoomFactor={zoomFactor}
+        zoomRadius={zoomRadius}
+        screenshotCanvas={null}
+      />
     </div>
   );
 };
