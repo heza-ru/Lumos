@@ -1,68 +1,25 @@
 {
-  "name": "drawpen",
-  "productName": "DrawPen",
-  "version": "0.0.50",
-  "description": "DrawPen is a screen annotation tool built with web technology",
-  "appId": "dmytro.vasin.drawpen",
-  "author": {
-    "name": "DmytroVasin",
-    "email": "dmytro.vasin@gmail.com"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/DmytroVasin/DrawPen"
-  },
+  "name": "lumos",
+  "version": "0.1.0",
   "private": true,
-  "license": "MIT",
-  "main": ".webpack/main",
   "scripts": {
-    "start": "NODE_ENV=development electron-forge start",
-    "package_no_sign": "electron-forge package -- --no-sign",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "publish": "electron-forge publish"
-  },
-  "config": {
-    "forge": "./tools/forge/forge.config.js"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.25.2",
-    "@babel/preset-react": "^7.24.7",
-    "@electron-forge/cli": "^7.5.0",
-    "@electron-forge/maker-deb": "^7.5.0",
-    "@electron-forge/maker-dmg": "^7.5.0",
-    "@electron-forge/maker-rpm": "^7.5.0",
-    "@electron-forge/maker-squirrel": "^7.5.0",
-    "@electron-forge/maker-zip": "^7.5.0",
-    "@electron-forge/plugin-webpack": "^7.5.0",
-    "@electron-forge/publisher-github": "^7.5.0",
-    "@electron/notarize": "^2.5.0",
-    "@electron/osx-sign": "^1.3.1",
-    "babel-loader": "^9.1.3",
-    "copy-webpack-plugin": "^12.0.2",
-    "css-loader": "^7.1.2",
-    "dotenv": "^16.4.5",
-    "electron": "40.4.0",
-    "sass": "^1.77.8",
-    "sass-loader": "^14.2.1",
-    "style-loader": "^4.0.0",
-    "webpack": "^5.94.0"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "tauri": "tauri",
+    "tauri:build": "tauri build",
+    "tauri:dev": "tauri dev"
   },
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.1",
-    "electron-store": "^10.0.0",
-    "lazy-brush": "^2.0.1",
-    "lodash.throttle": "^4.1.1",
-    "perfect-freehand": "^1.2.2",
-    "posthog-node": "^5.21.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-icons": "5.5.0",
-    "update-electron-app": "^3.0.0"
+    "@tauri-apps/api": "^2"
   },
-  "browserslist": {
-    "development": [
-      "last 1 chrome version"
-    ]
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@vitejs/plugin-react": "^4",
+    "typescript": "^5",
+    "vite": "^6"
   }
 }

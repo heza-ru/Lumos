@@ -5,8 +5,10 @@ node_modules
 .env
 .env.*
 !.env.example
-# Webpack
-.webpack/
-# Electron-Forge
-out/
 .private/
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/schemas/
+*.orig
+dist/
