@@ -1,93 +1,69 @@
-import { useToolState } from "../../hooks/useToolState";
+import { useEffect, useState } from "react";
 import { ToolButton } from "./ToolButton";
-import { ColorPicker } from "./ColorPicker";
+import { ColorGroup } from "./ColorGroup";
+import { WidthGroup } from "./WidthGroup";
+import { ActionButton } from "./ActionButton";
+import { ModeChip } from "./ModeChip";
+import { Divider } from "./Divider";
+import { Undo2, Trash2 } from "lucide-react";
+import { useToolState } from "../../hooks/useToolState";
 import { TOOLS } from "../../types";
-
-const DIVIDER = (
-  <div style={{
-    width: 1,
-    height: 20,
-    background: "rgba(255,255,255,0.15)",
-    margin: "0 2px",
-    flexShrink: 0,
-  }} />
-);
+import styles from "./Toolbar.module.css";
+import { GlassMaterialVariant } from "tauri-plugin-liquid-glass-api";
 
 export function Toolbar() {
-  const { activeTool, activeColor, selectTool, selectColor, undo, clear } = useToolState();
+  const { activeTool, activeColor, activeWidth, selectTool, selectColor, selectWidth, undo, clear } = useToolState();
+  const [isNativeGlass, setIsNativeGlass] = useState(false);
+
+  useEffect(() => {
+    applyGlass();
+  }, []);
+
+  async function applyGlass() {
+    try {
+      const { setLiquidGlassEffect } = await import("tauri-plugin-liquid-glass-api");
+      await setLiquidGlassEffect({ cornerRadius: 100, variant: GlassMaterialVariant.Regular });
+      setIsNativeGlass(true);
+    } catch {
+      setIsNativeGlass(false);
+    }
+  }
 
   return (
     <div
       data-tauri-drag-region
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 3,
-        padding: "7px 10px",
-        borderRadius: 14,
-        background: "rgba(18, 18, 18, 0.85)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        boxShadow: "0 4px 28px rgba(0,0,0,0.45), inset 0 0 0 0.5px rgba(255,255,255,0.08)",
-        userSelect: "none",
-        WebkitUserSelect: "none",
-        // Entire bar is a drag region; individual controls override with no-drag
-        WebkitAppRegion: "drag",
-      } as React.CSSProperties}
+      className={`${styles.pill} ${isNativeGlass ? "" : styles.fallback}`}
     >
-      {TOOLS.map((t) => (
-        <ToolButton
-          key={t.kind}
-          kind={t.kind}
-          emoji={t.emoji}
-          label={t.label}
-          hotkey={t.hotkey}
-          active={activeTool === t.kind}
-          onClick={() => selectTool(t.kind)}
-        />
-      ))}
+      <div className={styles.groupTools}>
+        {TOOLS.map((t) => (
+          <ToolButton
+            key={t.kind}
+            kind={t.kind}
+            label={t.label}
+            hotkey={t.hotkey}
+            active={activeTool === t.kind}
+            onClick={() => selectTool(t.kind)}
+          />
+        ))}
+      </div>
 
-      {DIVIDER}
+      <Divider />
+      <ColorGroup active={activeColor} onSelect={selectColor} />
+      <Divider />
+      <WidthGroup active={activeWidth} onSelect={selectWidth} />
+      <Divider />
 
-      <ColorPicker active={activeColor} onSelect={selectColor} />
+      <div className={styles.groupActions}>
+        <ActionButton title="Undo (⌘Z)" onClick={undo}>
+          <Undo2 size={15} strokeWidth={2} />
+        </ActionButton>
+        <ActionButton title="Clear all (⌘K)" onClick={clear}>
+          <Trash2 size={15} strokeWidth={2} />
+        </ActionButton>
+      </div>
 
-      {DIVIDER}
-
-      {/* Undo */}
-      <button
-        title="Undo (⌘Z)"
-        onClick={undo}
-        style={{
-          background: "transparent",
-          border: "none",
-          color: "rgba(255,255,255,0.55)",
-          cursor: "pointer",
-          fontSize: 16,
-          padding: "0 4px",
-          lineHeight: 1,
-          WebkitAppRegion: "no-drag",
-        } as React.CSSProperties}
-      >
-        ↩
-      </button>
-
-      {/* Clear */}
-      <button
-        title="Clear all (⌘K)"
-        onClick={clear}
-        style={{
-          background: "transparent",
-          border: "none",
-          color: "rgba(255,255,255,0.55)",
-          cursor: "pointer",
-          fontSize: 13,
-          padding: "0 4px",
-          lineHeight: 1,
-          WebkitAppRegion: "no-drag",
-        } as React.CSSProperties}
-      >
-        ✕
-      </button>
+      <Divider />
+      <ModeChip />
     </div>
   );
 }
