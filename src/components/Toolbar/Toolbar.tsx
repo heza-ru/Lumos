@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ToolButton } from "./ToolButton";
 import { ColorGroup } from "./ColorGroup";
 import { WidthGroup } from "./WidthGroup";
@@ -13,26 +13,21 @@ import { GlassMaterialVariant } from "tauri-plugin-liquid-glass-api";
 
 export function Toolbar() {
   const { activeTool, activeColor, activeWidth, selectTool, selectColor, selectWidth, undo, clear } = useToolState();
-  const [isNativeGlass, setIsNativeGlass] = useState(false);
-
   useEffect(() => {
-    applyGlass();
+    // Apply native glass on top of the CSS fallback.
+    // The CSS fallback is always visible — native glass enhances it further
+    // when NSGlassEffectView / NSVisualEffectView is available.
+    import("tauri-plugin-liquid-glass-api")
+      .then(({ setLiquidGlassEffect }) =>
+        setLiquidGlassEffect({ cornerRadius: 100, variant: GlassMaterialVariant.Regular })
+      )
+      .catch(() => {/* CSS fallback already applied, no action needed */});
   }, []);
-
-  async function applyGlass() {
-    try {
-      const { setLiquidGlassEffect } = await import("tauri-plugin-liquid-glass-api");
-      await setLiquidGlassEffect({ cornerRadius: 100, variant: GlassMaterialVariant.Regular });
-      setIsNativeGlass(true);
-    } catch {
-      setIsNativeGlass(false);
-    }
-  }
 
   return (
     <div
       data-tauri-drag-region
-      className={`${styles.pill} ${isNativeGlass ? "" : styles.fallback}`}
+      className={`${styles.pill} ${styles.fallback}`}
     >
       <div className={styles.groupTools}>
         {TOOLS.map((t) => (
