@@ -5,6 +5,7 @@ pub mod commands;
 pub mod hotkeys;
 pub mod tools;
 pub mod effects;
+pub mod settings;
 
 use state::new_shared_state;
 use tauri::Manager;
@@ -12,7 +13,6 @@ use tauri::Manager;
 pub fn run() {
     let app_state = new_shared_state();
 
-    #[cfg(target_os = "macos")]
     let app_state_for_setup = app_state.clone();
 
     tauri::Builder::default()
@@ -31,8 +31,23 @@ pub fn run() {
             commands::toggle_spotlight,
             commands::set_spotlight_shape,
             commands::toggle_zoom,
+            commands::get_settings,
+            commands::save_settings,
         ])
         .setup(move |app| {
+            // Load persisted settings and apply to state
+            {
+                use tauri_plugin_store::StoreExt;
+                if let Ok(store) = app.store("settings.json") {
+                    if let Some(val) = store.get("settings") {
+                        if let Ok(loaded) = serde_json::from_value::<crate::settings::Settings>(val.clone()) {
+                            let mut s = app_state_for_setup.lock();
+                            s.spotlight_dim_alpha = loaded.spotlight_dim_alpha;
+                            s.zoom_factor = loaded.zoom_factor;
+                        }
+                    }
+                }
+            }
             #[cfg(target_os = "macos")]
             {
                 let panel = unsafe { overlay::create_overlay() };

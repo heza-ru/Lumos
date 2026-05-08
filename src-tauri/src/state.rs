@@ -142,6 +142,7 @@ pub struct AppState {
     pub cursor_pos:       Point,
     pub spotlight_active: bool,
     pub zoom_active:      bool,
+    pub zoom_factor:      f32,
     /// Raw NSPanel pointer as usize for click-through sync from hotkeys.
     /// Only set on macOS after overlay creation; 0 means unset.
     pub overlay_panel_ptr: usize,
@@ -159,6 +160,7 @@ impl Default for AppState {
             cursor_pos:          Point { x: 0.0, y: 0.0 },
             spotlight_active:    false,
             zoom_active:         false,
+            zoom_factor:         2.5,
             overlay_panel_ptr:   0,
             cursor_effect:       crate::effects::cursor::CursorEffect::Ring,
             spotlight_shape:     crate::effects::spotlight::SpotlightShape::default(),

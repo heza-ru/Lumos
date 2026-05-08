@@ -131,6 +131,35 @@ pub fn toggle_zoom(state: State<SharedState>) -> bool {
     s.zoom_active
 }
 
+#[tauri::command]
+pub fn get_settings(app: tauri::AppHandle) -> crate::settings::Settings {
+    use tauri_plugin_store::StoreExt;
+    app.store("settings.json")
+        .ok()
+        .and_then(|store| store.get("settings"))
+        .and_then(|v| serde_json::from_value(v.clone()).ok())
+        .unwrap_or_default()
+}
+
+#[tauri::command]
+pub fn save_settings(
+    settings: crate::settings::Settings,
+    state: State<SharedState>,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    // Apply relevant settings to live state
+    {
+        let mut s = state.lock();
+        s.spotlight_dim_alpha = settings.spotlight_dim_alpha;
+        s.zoom_factor = settings.zoom_factor;
+    }
+    // Persist to store
+    use tauri_plugin_store::StoreExt;
+    let store = app.store("settings.json").map_err(|e| e.to_string())?;
+    store.set("settings", serde_json::to_value(&settings).map_err(|e| e.to_string())?);
+    store.save().map_err(|e| e.to_string())
+}
+
 // Tests at bottom
 #[cfg(test)]
 mod tests {

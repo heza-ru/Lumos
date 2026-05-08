@@ -1,3 +1,19 @@
+import { Toolbar } from "./components/Toolbar/Toolbar";
+
 export default function App() {
-  return <div style={{ color: "white", padding: 8 }}>Lumos toolbar placeholder</div>;
+  return (
+    <div
+      style={{
+        width: "100vw",
+        height: "100vh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "transparent",
+        overflow: "hidden",
+      }}
+    >
+      <Toolbar />
+    </div>
+  );
 }
