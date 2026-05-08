@@ -1,3 +1,5 @@
+#![cfg(target_os = "macos")]
+
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
