@@ -2,6 +2,7 @@ pub mod state;
 pub mod overlay;
 pub mod renderer;
 pub mod commands;
+pub mod hotkeys;
 
 use state::new_shared_state;
 
@@ -25,7 +26,7 @@ pub fn run() {
             commands::toggle_click_through,
             commands::get_app_state,
         ])
-        .setup(move |_app| {
+        .setup(move |app| {
             #[cfg(target_os = "macos")]
             {
                 let panel = unsafe { overlay::create_overlay() };
@@ -40,6 +41,9 @@ pub fn run() {
                 // switches from pointer mode to draw mode.
                 let tap = overlay::EventTap::install(app_state_for_setup.clone());
                 std::mem::forget(tap); // keep tap alive for app lifetime
+
+                // Register global hotkeys.
+                hotkeys::register_all(&app.handle(), app_state_for_setup.clone());
             }
             Ok(())
         })

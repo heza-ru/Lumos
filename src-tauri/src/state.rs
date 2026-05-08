@@ -135,20 +135,24 @@ impl DrawingState {
 /// Top-level app state shared between Tauri commands and the render loop.
 #[derive(Debug)]
 pub struct AppState {
-    pub overlay_visible: bool,
-    pub click_through:   bool,
-    pub drawing:         DrawingState,
+    pub overlay_visible:  bool,
+    pub click_through:    bool,
+    pub drawing:          DrawingState,
     /// Current cursor position (updated by EventTap on every mouse move).
-    pub cursor_pos:      Point,
+    pub cursor_pos:       Point,
+    pub spotlight_active: bool,
+    pub zoom_active:      bool,
 }
 
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            overlay_visible: false,
-            click_through:   true,
-            drawing:         DrawingState::default(),
-            cursor_pos:      Point { x: 0.0, y: 0.0 },
+            overlay_visible:  false,
+            click_through:    true,
+            drawing:          DrawingState::default(),
+            cursor_pos:       Point { x: 0.0, y: 0.0 },
+            spotlight_active: false,
+            zoom_active:      false,
         }
     }
 }
@@ -157,10 +161,12 @@ pub type SharedState = Arc<Mutex<AppState>>;
 
 pub fn new_shared_state() -> SharedState {
     Arc::new(Mutex::new(AppState {
-        overlay_visible: false,
-        click_through:   true,
-        drawing:         DrawingState::default(),
-        cursor_pos:      Point { x: 0.0, y: 0.0 },
+        overlay_visible:  false,
+        click_through:    true,
+        drawing:          DrawingState::default(),
+        cursor_pos:       Point { x: 0.0, y: 0.0 },
+        spotlight_active: false,
+        zoom_active:      false,
     }))
 }
 
