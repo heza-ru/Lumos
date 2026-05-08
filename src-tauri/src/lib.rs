@@ -6,6 +6,7 @@ pub mod hotkeys;
 pub mod tools;
 pub mod effects;
 pub mod settings;
+pub mod display;
 
 use state::new_shared_state;
 use tauri::Manager;

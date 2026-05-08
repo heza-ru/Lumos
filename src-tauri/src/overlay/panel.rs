@@ -82,3 +82,19 @@ pub unsafe fn set_click_through(panel: *mut objc::runtime::Object, enabled: bool
     let val: cocoa::base::BOOL = if enabled { YES } else { NO };
     let _: () = msg_send![panel, setIgnoresMouseEvents: val];
 }
+
+/// Resize and reposition the overlay to match a display's frame.
+///
+/// # Safety
+/// Must be called on the main thread.
+pub unsafe fn resize_overlay(
+    panel: *mut objc::runtime::Object,
+    x: f64, y: f64, width: f64, height: f64,
+) {
+    use cocoa::foundation::{NSPoint, NSRect, NSSize};
+    let frame = NSRect {
+        origin: NSPoint { x, y },
+        size: NSSize { width, height },
+    };
+    let _: () = msg_send![panel, setFrame: frame display: false];
+}
