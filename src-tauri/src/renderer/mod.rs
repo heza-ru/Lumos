@@ -32,26 +32,43 @@ pub fn start_render_loop(
         let mut metal_canvas = unsafe { MetalCanvas::new(ns_panel, width, height, scale) };
 
         let frame_budget = std::time::Duration::from_micros(8_333); // ~120fps
+        let loop_start = std::time::Instant::now();
 
         loop {
             let frame_start = std::time::Instant::now();
+            let t_secs = loop_start.elapsed().as_secs_f32();
 
             // --- Take a snapshot under a short lock ---
-            let (visible, drawing_snapshot, cursor_pos) = {
+            let (visible, drawing_snapshot, cursor_pos, cursor_effect, spotlight_active, spotlight_shape, spotlight_dim_alpha) = {
                 let s = state.lock();
                 let snapshot = s.drawing.clone();
-                let cursor = s.cursor_pos.clone();
-                (s.overlay_visible, snapshot, cursor)
+                let cursor = (s.cursor_pos.x, s.cursor_pos.y);
+                let effect = s.cursor_effect;
+                let spot_active = s.spotlight_active;
+                let spot_shape = s.spotlight_shape;
+                let spot_dim = s.spotlight_dim_alpha;
+                (s.overlay_visible, snapshot, cursor, effect, spot_active, spot_shape, spot_dim)
             };
-
-            // cursor_pos is captured for future use (cursor effects in later tasks)
-            let _ = cursor_pos;
 
             // --- Render only when overlay is visible ---
             if visible {
                 let scale_copy = scale;
+                let screen_w = width as f32;
+                let screen_h = height as f32;
                 metal_canvas.render_frame(|canvas: &Canvas| {
-                    draw_frame(canvas, &drawing_snapshot, scale_copy);
+                    draw_frame(
+                        canvas,
+                        &drawing_snapshot,
+                        scale_copy,
+                        cursor_pos,
+                        cursor_effect,
+                        t_secs,
+                        spotlight_active,
+                        spotlight_shape,
+                        spotlight_dim_alpha,
+                        screen_w,
+                        screen_h,
+                    );
                 });
             }
 

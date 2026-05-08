@@ -4,6 +4,7 @@ pub mod renderer;
 pub mod commands;
 pub mod hotkeys;
 pub mod tools;
+pub mod effects;
 
 use state::new_shared_state;
 use tauri::Manager;
@@ -27,6 +28,9 @@ pub fn run() {
             commands::toggle_overlay,
             commands::toggle_click_through,
             commands::get_app_state,
+            commands::toggle_spotlight,
+            commands::set_spotlight_shape,
+            commands::toggle_zoom,
         ])
         .setup(move |app| {
             #[cfg(target_os = "macos")]

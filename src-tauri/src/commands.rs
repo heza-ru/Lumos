@@ -105,6 +105,32 @@ pub fn get_app_state(state: State<SharedState>) -> AppSnapshot {
     }
 }
 
+#[tauri::command]
+pub fn toggle_spotlight(state: State<SharedState>) -> bool {
+    let mut s = state.lock();
+    s.spotlight_active = !s.spotlight_active;
+    s.spotlight_active
+}
+
+#[tauri::command]
+pub fn set_spotlight_shape(shape: String, state: State<SharedState>) -> Result<(), String> {
+    use crate::effects::spotlight::SpotlightShape;
+    let s_shape = match shape.as_str() {
+        "circle"    => SpotlightShape::Circle { radius: 120.0 },
+        "rectangle" => SpotlightShape::Rectangle { width: 400.0, height: 250.0 },
+        other => return Err(format!("unknown shape: {other}")),
+    };
+    state.lock().spotlight_shape = s_shape;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn toggle_zoom(state: State<SharedState>) -> bool {
+    let mut s = state.lock();
+    s.zoom_active = !s.zoom_active;
+    s.zoom_active
+}
+
 // Tests at bottom
 #[cfg(test)]
 mod tests {

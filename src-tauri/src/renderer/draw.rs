@@ -17,16 +17,56 @@ pub fn clear(canvas: &Canvas) {
 
 /// Draw all committed strokes plus the live (in-progress) stroke.
 /// `scale` is the Retina backing scale factor; logical coords are scaled up.
-pub fn draw_frame(canvas: &Canvas, state: &DrawingState, scale: f32) {
+#[allow(clippy::too_many_arguments)]
+pub fn draw_frame(
+    canvas: &Canvas,
+    state: &DrawingState,
+    scale: f32,
+    cursor_pos: (f32, f32),
+    cursor_effect: crate::effects::cursor::CursorEffect,
+    t_secs: f32,
+    spotlight_active: bool,
+    spotlight_shape: crate::effects::spotlight::SpotlightShape,
+    spotlight_dim_alpha: f32,
+    screen_w: f32,
+    screen_h: f32,
+) {
     canvas.save();
     canvas.scale((scale, scale));
     clear(canvas);
+
+    // Draw spotlight before strokes (dims the background)
+    #[cfg(target_os = "macos")]
+    if spotlight_active {
+        crate::effects::spotlight::draw_spotlight(
+            canvas,
+            cursor_pos.0,
+            cursor_pos.1,
+            spotlight_shape,
+            spotlight_dim_alpha,
+            screen_w / scale,
+            screen_h / scale,
+        );
+    }
 
     for stroke in &state.strokes {
         draw_stroke(canvas, stroke, None);
     }
     if let Some(live) = &state.live_stroke {
         draw_stroke(canvas, live, None);
+    }
+
+    // Draw cursor effect after strokes
+    #[cfg(target_os = "macos")]
+    if cursor_effect != crate::effects::cursor::CursorEffect::None {
+        crate::effects::cursor::draw_cursor_effect(
+            canvas,
+            cursor_effect,
+            cursor_pos.0,
+            cursor_pos.1,
+            t_secs,
+            (82, 155, 224),
+        );
     }
 
     canvas.restore();
