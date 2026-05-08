@@ -83,6 +83,19 @@ pub fn run() {
 
                 // Register global hotkeys.
                 hotkeys::register_all(&app.handle(), app_state_for_setup.clone());
+
+                // Raise the toolbar window above the NSPanel (level 1001) so it
+                // is always visible on top of the annotation overlay.
+                if let Some(toolbar_win) = app.get_webview_window("toolbar") {
+                    unsafe {
+                        use objc::{msg_send, sel, sel_impl};
+                        // ns_window() returns *mut c_void; cast to id for msg_send
+                        let raw = toolbar_win.ns_window().unwrap();
+                        let ns_win = raw as cocoa::base::id;
+                        // Level 1002 = above our NSPanel at 1001
+                        let _: () = msg_send![ns_win, setLevel: 1002i64];
+                    }
+                }
             }
             Ok(())
         })
