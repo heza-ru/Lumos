@@ -149,6 +149,9 @@ pub struct AppState {
     pub cursor_effect:    crate::effects::cursor::CursorEffect,
     pub spotlight_shape:  crate::effects::spotlight::SpotlightShape,
     pub spotlight_dim_alpha: f32,
+    /// Logical screen height in points — used to flip CGEvent y (bottom-origin)
+    /// to Skia y (top-origin). Set from Rust setup before EventTap starts.
+    pub screen_height: f32,
 }
 
 impl Default for AppState {
@@ -165,6 +168,7 @@ impl Default for AppState {
             cursor_effect:       crate::effects::cursor::CursorEffect::Ring,
             spotlight_shape:     crate::effects::spotlight::SpotlightShape::default(),
             spotlight_dim_alpha: 0.65,
+            screen_height: 1080.0, // safe fallback; overwritten from Rust setup
         }
     }
 }

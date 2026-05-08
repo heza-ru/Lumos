@@ -14,7 +14,7 @@
       {
         "label": "toolbar",
         "title": "Lumos Toolbar",
-        "width": 560,
+        "width": 640,
         "height": 72,
         "resizable": false,
         "decorations": false,

@@ -40,11 +40,12 @@ pub unsafe fn create_overlay() -> *mut objc::runtime::Object {
     // Float above fullscreen apps
     let _: () = msg_send![panel, setLevel: OVERLAY_LEVEL];
 
-    // Appear on all Spaces and fullscreen apps; stationary (no Expose)
-    // NSWindowCollectionBehaviorCanJoinAllSpaces = 1 << 0
-    // NSWindowCollectionBehaviorStationary       = 1 << 4
-    // NSWindowCollectionBehaviorIgnoresCycle     = 1 << 6
-    let behaviors: u64 = (1 << 0) | (1 << 4) | (1 << 6);
+    // Appear on ALL Spaces AND over fullscreen apps
+    // NSWindowCollectionBehaviorCanJoinAllSpaces    = 1 << 0 =   1
+    // NSWindowCollectionBehaviorStationary          = 1 << 4 =  16
+    // NSWindowCollectionBehaviorIgnoresCycle        = 1 << 6 =  64
+    // NSWindowCollectionBehaviorFullScreenAuxiliary = 1 << 8 = 256
+    let behaviors: u64 = 1 | 16 | 64 | 256;
     let _: () = msg_send![panel, setCollectionBehavior: behaviors];
 
     // Start click-through (pointer mode)

@@ -68,8 +68,13 @@ pub fn run() {
                 // Start the 120fps render loop on a dedicated background thread.
                 renderer::start_render_loop(panel, app_state_for_setup.clone(), screen_w, screen_h, scale);
 
-                // Store the raw panel pointer in AppState so hotkeys can sync ignoresMouseEvents.
-                app_state_for_setup.lock().overlay_panel_ptr = panel as usize;
+                // Store screen_height (logical points) in AppState.
+                // EventTap needs it to flip CGEvent y (bottom-origin) → Skia y (top-origin).
+                {
+                    let mut s = app_state_for_setup.lock();
+                    s.screen_height = screen_h as f32;
+                    s.overlay_panel_ptr = panel as usize;
+                }
 
                 // Manage OverlayRef in Tauri state so Tauri commands can access the panel.
                 app.manage(overlay::OverlayRef::new(panel));
@@ -98,7 +103,7 @@ pub fn run() {
                         let screen_h = frame.size.height;
 
                         // Bottom-center: 80 logical px above the Dock
-                        let win_w = 560.0_f64;
+                        let win_w = 640.0_f64;
                         let win_h = 72.0_f64;
                         let x = (screen_w - win_w) / 2.0;
                         let y = screen_h - win_h - 80.0;
