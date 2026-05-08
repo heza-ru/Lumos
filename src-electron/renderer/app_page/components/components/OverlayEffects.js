@@ -172,7 +172,7 @@ const OverlayEffects = ({
         top: 0, left: 0,
         width: '100vw', height: '100vh',
         pointerEvents: 'none',
-        zIndex: 10,
+        zIndex: 5,    /* below toolbar (z-index 100) so clicks always reach toolbar */
       }}
     />
   );

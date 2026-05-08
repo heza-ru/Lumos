@@ -16,6 +16,7 @@
   position: absolute;
   top: var(--border-size);
   left: var(--border-size);
+  z-index: 100;   /* above OverlayEffects canvas (z-index 5) */
 
   .toolbar__slider { height: var(--toolbar-height); }
 
@@ -46,13 +47,16 @@
   }
 }
 
-/* Stair pointer-events trick */
+/* Stair pointer-events trick — ensure toolbar itself and all interactive children receive clicks */
 #toolbar {
   pointer-events: none;
   .toolbar__close,
   .toolbar__mode-switcher,
   .toolbar__container,
-  .toolbar__slider { pointer-events: auto; }
+  .toolbar__slider {
+    pointer-events: auto;
+    position: relative;   /* create stacking context so z-index: 100 on parent applies */
+  }
 }
 
 /* Button reset */

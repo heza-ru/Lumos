@@ -1601,6 +1601,20 @@ const Application = (settings) => {
         handleChangeTool={handleChangeTool}
       />
 
+      {/* OverlayEffects rendered BEFORE ToolBar so toolbar always sits on top in DOM order.
+          OverlayEffects has z-index:5, toolbar has z-index:100, so toolbar wins either way. */}
+      <OverlayEffects
+        mouseCoordinates={mouseCoordinates}
+        spotlightActive={spotlightActive}
+        spotlightShape={spotlightShape}
+        spotlightRadius={spotlightRadius}
+        cursorHighlight={cursorHighlight}
+        zoomActive={zoomActive}
+        zoomFactor={zoomFactor}
+        zoomRadius={zoomRadius}
+        screenshotCanvas={null}
+      />
+
       {
         showToolbar &&
           <ToolBar
@@ -1624,18 +1638,6 @@ const Application = (settings) => {
             Icons={Icons}
           />
       }
-
-      <OverlayEffects
-        mouseCoordinates={mouseCoordinates}
-        spotlightActive={spotlightActive}
-        spotlightShape={spotlightShape}
-        spotlightRadius={spotlightRadius}
-        cursorHighlight={cursorHighlight}
-        zoomActive={zoomActive}
-        zoomFactor={zoomFactor}
-        zoomRadius={zoomRadius}
-        screenshotCanvas={null}
-      />
     </div>
   );
 };
