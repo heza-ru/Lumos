@@ -8,8 +8,13 @@ on:
 jobs:
   build-macos:
     runs-on: macos-latest
+    permissions:
+      contents: write  # needed to push cask update + create release
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -34,7 +39,32 @@ jobs:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
 
-      - name: Upload DMG artifact
+      - name: Upload DMG to GitHub release
         uses: softprops/action-gh-release@v2
         with:
           files: src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg
+
+      - name: Update Homebrew cask
+        run: |
+          # Get the version from the git tag (strip leading 'v')
+          VERSION="${GITHUB_REF_NAME#v}"
+
+          # Find the built DMG
+          DMG=$(ls src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg | head -1)
+
+          # Compute SHA256
+          SHA256=$(shasum -a 256 "$DMG" | awk '{print $1}')
+
+          echo "Version: $VERSION"
+          echo "SHA256:  $SHA256"
+
+          # Patch Casks/lumos.rb in-place
+          sed -i '' "s/version \".*\"/version \"$VERSION\"/" Casks/lumos.rb
+          sed -i '' "s/sha256 .*/sha256 \"$SHA256\"/" Casks/lumos.rb
+
+          # Commit and push back to main
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/lumos.rb
+          git commit -m "chore: update Homebrew cask to v$VERSION [skip ci]"
+          git push origin HEAD:main

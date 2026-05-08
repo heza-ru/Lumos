@@ -81,7 +81,13 @@ graph TD
 
 ## Installation
 
-Download the latest DMG from [Releases](https://github.com/heza-ru/Lumos/releases/latest).
+**Homebrew (recommended):**
+```bash
+brew tap heza-ru/lumos https://github.com/heza-ru/Lumos
+brew install --cask lumos
+```
+
+**Manual:** Download the latest DMG from [Releases](https://github.com/heza-ru/Lumos/releases/latest) and drag to Applications.
 
 Grant **Accessibility** permission when prompted — required for the global hotkey overlay and mouse capture in draw mode.
 
