@@ -138,6 +138,8 @@ pub struct AppState {
     pub overlay_visible: bool,
     pub click_through:   bool,
     pub drawing:         DrawingState,
+    /// Current cursor position (updated by EventTap on every mouse move).
+    pub cursor_pos:      Point,
 }
 
 impl Default for AppState {
@@ -146,6 +148,7 @@ impl Default for AppState {
             overlay_visible: false,
             click_through:   true,
             drawing:         DrawingState::default(),
+            cursor_pos:      Point { x: 0.0, y: 0.0 },
         }
     }
 }
@@ -157,6 +160,7 @@ pub fn new_shared_state() -> SharedState {
         overlay_visible: false,
         click_through:   true,
         drawing:         DrawingState::default(),
+        cursor_pos:      Point { x: 0.0, y: 0.0 },
     }))
 }
 

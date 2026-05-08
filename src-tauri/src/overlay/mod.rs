@@ -4,6 +4,12 @@ mod panel;
 #[cfg(target_os = "macos")]
 pub use panel::{create_overlay, set_click_through, show_overlay, hide_overlay};
 
+#[cfg(target_os = "macos")]
+mod event_tap;
+
+#[cfg(target_os = "macos")]
+pub use event_tap::EventTap;
+
 /// Opaque handle to the platform overlay window.
 /// Wraps the raw NSPanel pointer so it can be stored in Tauri managed state.
 pub struct OverlayHandle {
