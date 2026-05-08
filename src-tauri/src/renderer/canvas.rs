@@ -75,38 +75,6 @@ impl MetalCanvas {
         }
     }
 
-    /// Acquire the next drawable and wrap it in a Skia Surface.
-    /// Returns `None` if no drawable is available (display throttle / offscreen).
-    ///
-    /// IMPORTANT: The caller must call `flush()` on the returned surface's context,
-    /// then present the drawable before dropping. Use `render_frame` for a complete
-    /// draw-flush-present cycle.
-    pub fn next_surface(&mut self) -> Option<Surface> {
-        let drawable = self.layer.next_drawable()?;
-
-        let texture_info = unsafe {
-            mtl::TextureInfo::new(drawable.texture().as_ptr() as mtl::Handle)
-        };
-
-        let drawable_size = self.layer.drawable_size();
-        let physical_w = drawable_size.width as i32;
-        let physical_h = drawable_size.height as i32;
-
-        let backend_rt = gpu::backend_render_targets::make_mtl(
-            (physical_w, physical_h),
-            &texture_info,
-        );
-
-        gpu::surfaces::wrap_backend_render_target(
-            &mut self.gr_context,
-            &backend_rt,
-            SurfaceOrigin::TopLeft,
-            ColorType::BGRA8888,
-            None,
-            None,
-        )
-    }
-
     /// Flush pending Skia work and submit to GPU.
     pub fn flush(&mut self) {
         self.gr_context.flush_and_submit();
