@@ -13,3 +13,6 @@ src-tauri/gen/schemas/
 *.orig
 dist/
 .superpowers/
+.webpack/
+out/
+package-lock.json

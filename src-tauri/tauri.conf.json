@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Lumos",
+  "productName": "Lumos - Rust",
   "version": "0.1.0",
   "identifier": "com.lumos.app",
   "build": {
