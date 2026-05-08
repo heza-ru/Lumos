@@ -1,0 +1,11 @@
+{"type":"server-started","port":53231,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:53231","screen_dir":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content","state_dir":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/state"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/toolbar-directions.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/toolbar-combined-v1.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/liquid-glass-native.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/liquid-glass-v2.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/liquid-glass-v3.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/liquid-glass-v4.html"}
+{"type":"screen-updated","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/liquid-glass-v4.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/liquid-glass-v4b.html"}
+{"type":"screen-added","file":"/Users/mohammad.haider/Documents/Lumos/.superpowers/brainstorm/75375-1778271141/content/waiting.html"}
+{"type":"server-stopped","reason":"idle timeout"}

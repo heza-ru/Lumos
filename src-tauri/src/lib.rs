@@ -75,11 +75,10 @@ pub fn run() {
                 app.manage(overlay::OverlayRef::new(panel));
                 unsafe { overlay::show_overlay(panel) };
 
-                // Install CGEventTap for mouse capture in draw mode.
-                // The tap starts inactive; it will be enabled when the overlay
-                // switches from pointer mode to draw mode.
-                let tap = overlay::EventTap::install(app_state_for_setup.clone());
-                std::mem::forget(tap); // keep tap alive for app lifetime
+                // Install CGEventTap. Always-on: click_through flag in AppState
+                // controls whether events are consumed (draw) or passed through (pointer).
+                // mem::forget keeps the thread alive; EventTap no longer needs a handle.
+                std::mem::forget(overlay::EventTap::install(app_state_for_setup.clone()));
 
                 // Register global hotkeys.
                 hotkeys::register_all(&app.handle(), app_state_for_setup.clone());
@@ -108,10 +107,16 @@ pub fn run() {
                             tauri::Position::Logical(tauri::LogicalPosition::new(x, y))
                         );
 
-                        // Raise above the NSPanel overlay (level 1001)
+                        // Raise above the NSPanel overlay (level 1001) and join all Spaces
                         let raw    = toolbar_win.ns_window().unwrap();
                         let ns_win = raw as cocoa::base::id;
                         let _: () = msg_send![ns_win, setLevel: 1002i64];
+
+                        // NSWindowCollectionBehaviorCanJoinAllSpaces    = 1 << 0 =   1
+                        // NSWindowCollectionBehaviorStationary           = 1 << 4 =  16
+                        // NSWindowCollectionBehaviorFullScreenAuxiliary  = 1 << 8 = 256
+                        // Combined: toolbar appears on every Space including fullscreen apps
+                        let _: () = msg_send![ns_win, setCollectionBehavior: 273u64];
                     }
                     let _ = toolbar_win.show();
                 }

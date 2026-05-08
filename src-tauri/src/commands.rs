@@ -182,11 +182,11 @@ mod tests {
     #[test]
     fn toggle_overlay_flips_visibility() {
         let state = new_shared_state();
+        assert!(state.lock().overlay_visible);   // starts true
+        toggle_overlay_inner(&state);
         assert!(!state.lock().overlay_visible);
         toggle_overlay_inner(&state);
         assert!(state.lock().overlay_visible);
-        toggle_overlay_inner(&state);
-        assert!(!state.lock().overlay_visible);
     }
 
     #[test]

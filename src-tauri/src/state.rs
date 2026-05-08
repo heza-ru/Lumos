@@ -154,8 +154,8 @@ pub struct AppState {
 impl Default for AppState {
     fn default() -> Self {
         Self {
-            overlay_visible:     false,
-            click_through:       true,
+            overlay_visible:     true,  // canvas active from launch; click_through gates drawing
+            click_through:       true, // start in pointer mode — mouse passes through
             drawing:             DrawingState::default(),
             cursor_pos:          Point { x: 0.0, y: 0.0 },
             spotlight_active:    false,
@@ -186,9 +186,10 @@ mod tests {
     }
 
     #[test]
-    fn overlay_starts_hidden() {
+    fn overlay_starts_visible() {
+        // Canvas is active from launch; click_through=true keeps it in pointer mode
         let state = AppState::default();
-        assert!(!state.overlay_visible);
+        assert!(state.overlay_visible);
     }
 
     #[test]
@@ -252,8 +253,8 @@ mod tests {
     fn new_shared_state_defaults() {
         let shared = new_shared_state();
         let s = shared.lock();
-        assert!(!s.overlay_visible);
-        assert!(s.click_through);
+        assert!(s.overlay_visible);   // canvas active from launch
+        assert!(s.click_through);      // pointer mode by default
         assert_eq!(s.drawing.active_tool, ToolKind::Pen);
     }
 }

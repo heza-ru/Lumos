@@ -201,9 +201,9 @@ mod tests {
     #[test]
     fn dispatch_action_toggle_overlay() {
         let state = crate::state::new_shared_state();
-        assert!(!state.lock().overlay_visible);
+        assert!(state.lock().overlay_visible);    // starts true
         dispatch_action(HotkeyAction::ToggleOverlay, &state);
-        assert!(state.lock().overlay_visible);
+        assert!(!state.lock().overlay_visible);   // toggled off
     }
 
     #[test]
