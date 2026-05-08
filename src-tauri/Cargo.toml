@@ -33,6 +33,7 @@ objc = "0.2"
 core-graphics = "0.25"
 core-foundation = "0.10"
 metal = "0.28"
+core-graphics-types = "0.1"
 skia-safe = { version = "0.75", features = ["metal", "textlayout"] }
 
 [profile.release]

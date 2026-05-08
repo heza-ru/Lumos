@@ -1,5 +1,6 @@
 pub mod state;
 pub mod overlay;
+pub mod renderer;
 
 use state::new_shared_state;
 
