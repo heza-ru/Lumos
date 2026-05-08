@@ -2,12 +2,12 @@ import { invoke } from "@tauri-apps/api/core";
 import { useState } from "react";
 
 export function ModeChip() {
-  // Rust defaults: click_through=true = pointer mode, so draw mode starts false
   const [isDrawMode, setIsDrawMode] = useState(false);
 
   const toggle = async () => {
-    await invoke("toggle_click_through").catch(console.error);
-    setIsDrawMode(prev => !prev);
+    const next = !isDrawMode;
+    await invoke("set_draw_mode", { active: next }).catch(console.error);
+    setIsDrawMode(next);
   };
 
   return (

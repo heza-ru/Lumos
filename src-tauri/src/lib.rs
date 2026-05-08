@@ -35,6 +35,7 @@ pub fn run() {
             commands::toggle_zoom,
             commands::get_settings,
             commands::save_settings,
+            commands::set_draw_mode,
         ])
         .setup(move |app| {
             // Load persisted settings and apply to state
@@ -52,45 +53,43 @@ pub fn run() {
             }
             #[cfg(target_os = "macos")]
             {
-                let panel = unsafe { overlay::create_overlay() };
+                // Set up the canvas window: all Spaces, above fullscreen, correct size
+                if let Some(canvas_win) = app.get_webview_window("canvas") {
+                    unsafe {
+                        use objc::{msg_send, sel, sel_impl};
+                        use cocoa::foundation::NSRect;
 
-                // Get screen dimensions and scale for the render loop
-                let (screen_w, screen_h, scale) = unsafe {
-                    use objc::{class, msg_send, sel, sel_impl};
-                    use cocoa::foundation::NSRect;
+                        let screen: cocoa::base::id = msg_send![objc::class!(NSScreen), mainScreen];
 
-                    let screen: cocoa::base::id = msg_send![objc::class!(NSScreen), mainScreen];
-                    let frame: NSRect = msg_send![screen, frame];
-                    let scale: f64 = msg_send![screen, backingScaleFactor];
-                    (frame.size.width as i32, frame.size.height as i32, scale as f32)
-                };
+                        // Use full screen bounds so the canvas covers everything
+                        let full_frame: NSRect = msg_send![screen, frame];
+                        let _ = canvas_win.set_position(
+                            tauri::Position::Logical(tauri::LogicalPosition::new(0.0_f64, 0.0_f64))
+                        );
+                        let _ = canvas_win.set_size(
+                            tauri::Size::Logical(tauri::LogicalSize::new(
+                                full_frame.size.width,
+                                full_frame.size.height,
+                            ))
+                        );
 
-                // Start the 120fps render loop on a dedicated background thread.
-                renderer::start_render_loop(panel, app_state_for_setup.clone(), screen_w, screen_h, scale);
+                        // Set window level and collection behavior
+                        let raw = canvas_win.ns_window().unwrap();
+                        let ns_win = raw as cocoa::base::id;
 
-                // Store screen_height (logical points) in AppState.
-                // EventTap needs it to flip CGEvent y (bottom-origin) → Skia y (top-origin).
-                {
-                    let mut s = app_state_for_setup.lock();
-                    s.screen_height = screen_h as f32;
-                    s.overlay_panel_ptr = panel as usize;
+                        // Level just below toolbar (1001) but above all normal windows
+                        let _: () = msg_send![ns_win, setLevel: 1000i64];
+
+                        // CanJoinAllSpaces(1) + Stationary(16) + IgnoresCycle(64) + FullScreenAuxiliary(256)
+                        let _: () = msg_send![ns_win, setCollectionBehavior: 337u64];
+
+                        // Start click-through (pointer mode)
+                        let _ = canvas_win.set_ignore_cursor_events(true);
+                    }
+                    let _ = canvas_win.show();
                 }
 
-                // Manage OverlayRef in Tauri state so Tauri commands can access the panel.
-                app.manage(overlay::OverlayRef::new(panel));
-                unsafe { overlay::show_overlay(panel) };
-
-                // Install CGEventTap. Always-on: click_through flag in AppState
-                // controls whether events are consumed (draw) or passed through (pointer).
-                // mem::forget keeps the thread alive; EventTap no longer needs a handle.
-                std::mem::forget(overlay::EventTap::install(app_state_for_setup.clone()));
-
-                // Register global hotkeys.
-                hotkeys::register_all(&app.handle(), app_state_for_setup.clone());
-
-                // Position toolbar at bottom-center and show it from Rust.
-                // This is authoritative — we do NOT rely on the JS useEffect
-                // to show the window because async JS can fail silently.
+                // Position and show toolbar window
                 if let Some(toolbar_win) = app.get_webview_window("toolbar") {
                     unsafe {
                         use objc::{msg_send, sel, sel_impl};
@@ -98,11 +97,9 @@ pub fn run() {
 
                         let screen: cocoa::base::id = msg_send![objc::class!(NSScreen), mainScreen];
                         let frame: NSRect = msg_send![screen, frame];
-                        let scale: f64   = msg_send![screen, backingScaleFactor];
                         let screen_w = frame.size.width;
                         let screen_h = frame.size.height;
 
-                        // Bottom-center: 80 logical px above the Dock
                         let win_w = 640.0_f64;
                         let win_h = 72.0_f64;
                         let x = (screen_w - win_w) / 2.0;
@@ -112,19 +109,16 @@ pub fn run() {
                             tauri::Position::Logical(tauri::LogicalPosition::new(x, y))
                         );
 
-                        // Raise above the NSPanel overlay (level 1001) and join all Spaces
-                        let raw    = toolbar_win.ns_window().unwrap();
+                        let raw = toolbar_win.ns_window().unwrap();
                         let ns_win = raw as cocoa::base::id;
                         let _: () = msg_send![ns_win, setLevel: 1002i64];
-
-                        // NSWindowCollectionBehaviorCanJoinAllSpaces    = 1 << 0 =   1
-                        // NSWindowCollectionBehaviorStationary           = 1 << 4 =  16
-                        // NSWindowCollectionBehaviorFullScreenAuxiliary  = 1 << 8 = 256
-                        // Combined: toolbar appears on every Space including fullscreen apps
-                        let _: () = msg_send![ns_win, setCollectionBehavior: 273u64];
+                        let _: () = msg_send![ns_win, setCollectionBehavior: 337u64];
                     }
                     let _ = toolbar_win.show();
                 }
+
+                // Register global hotkeys (no NSPanel or CGEventTap needed)
+                hotkeys::register_all(&app.handle(), app_state_for_setup.clone());
             }
             Ok(())
         })

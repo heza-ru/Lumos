@@ -1,6 +1,13 @@
 use serde::Serialize;
-use tauri::State;
+use tauri::{Emitter, Manager, State};
 use crate::state::{SharedState, ToolKind, StrokeWidth, Color as LColor};
+
+/// Emit an event to the canvas window so it can update its drawing state.
+pub fn emit_to_canvas(app: &tauri::AppHandle, event: &str, payload: serde_json::Value) {
+    if let Some(canvas) = app.get_webview_window("canvas") {
+        let _ = canvas.emit(event, payload);
+    }
+}
 
 // ── Pure testable logic ──────────────────────────────────────────────────────
 
@@ -36,17 +43,20 @@ pub fn toggle_click_through_inner(state: &SharedState) -> bool {
 // ── Tauri commands ───────────────────────────────────────────────────────────
 
 #[tauri::command]
-pub fn set_tool(tool: String, state: State<SharedState>) -> Result<(), String> {
-    set_tool_inner(&state, &tool)
+pub fn set_tool(tool: String, state: State<SharedState>, app: tauri::AppHandle) -> Result<(), String> {
+    set_tool_inner(&state, &tool)?;
+    emit_to_canvas(&app, "tool-changed", serde_json::json!({ "tool": tool }));
+    Ok(())
 }
 
 #[tauri::command]
-pub fn set_color(r: u8, g: u8, b: u8, state: State<SharedState>) {
+pub fn set_color(r: u8, g: u8, b: u8, state: State<SharedState>, app: tauri::AppHandle) {
     state.lock().drawing.active_color = LColor { r, g, b, a: 255 };
+    emit_to_canvas(&app, "color-changed", serde_json::json!({ "r": r, "g": g, "b": b }));
 }
 
 #[tauri::command]
-pub fn set_width(width: String, state: State<SharedState>) -> Result<(), String> {
+pub fn set_width(width: String, state: State<SharedState>, app: tauri::AppHandle) -> Result<(), String> {
     let w = match width.as_str() {
         "thin"       => StrokeWidth::Thin,
         "medium"     => StrokeWidth::Medium,
@@ -55,17 +65,41 @@ pub fn set_width(width: String, state: State<SharedState>) -> Result<(), String>
         other        => return Err(format!("unknown width: {other}")),
     };
     state.lock().drawing.active_width = w;
+    emit_to_canvas(&app, "width-changed", serde_json::json!({ "width": width }));
     Ok(())
 }
 
 #[tauri::command]
-pub fn undo(state: State<SharedState>) {
+pub fn undo(state: State<SharedState>, app: tauri::AppHandle) {
     state.lock().drawing.undo();
+    emit_to_canvas(&app, "undo", serde_json::json!({}));
 }
 
 #[tauri::command]
-pub fn clear_all(state: State<SharedState>) {
+pub fn clear_all(state: State<SharedState>, app: tauri::AppHandle) {
     state.lock().drawing.clear();
+    emit_to_canvas(&app, "clear-all", serde_json::json!({}));
+}
+
+#[tauri::command]
+pub fn set_draw_mode(
+    active: bool,
+    state: State<SharedState>,
+    app: tauri::AppHandle,
+) -> Result<(), String> {
+    // Update Rust state
+    state.lock().click_through = !active;
+
+    // Toggle cursor capture on the canvas window
+    if let Some(canvas_win) = app.get_webview_window("canvas") {
+        canvas_win.set_ignore_cursor_events(!active)
+            .map_err(|e| e.to_string())?;
+        if active {
+            let _ = canvas_win.show();
+        }
+    }
+
+    Ok(())
 }
 
 #[tauri::command]
@@ -74,18 +108,8 @@ pub fn toggle_overlay(state: State<SharedState>) -> bool {
 }
 
 #[tauri::command]
-pub fn toggle_click_through(
-    state: State<SharedState>,
-    #[cfg(target_os = "macos")]
-    overlay: State<crate::overlay::OverlayRef>,
-) -> bool {
-    let enabled = toggle_click_through_inner(&state);
-    #[cfg(target_os = "macos")]
-    {
-        let panel = *overlay.0.lock().unwrap();
-        unsafe { crate::overlay::set_click_through(panel, enabled) };
-    }
-    enabled
+pub fn toggle_click_through(state: State<SharedState>) -> bool {
+    toggle_click_through_inner(&state)
 }
 
 #[derive(Serialize)]

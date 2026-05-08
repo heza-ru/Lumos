@@ -23,6 +23,21 @@
         "skipTaskbar": true,
         "visible": false,
         "url": "index.html"
+      },
+      {
+        "label": "canvas",
+        "title": "Lumos Canvas",
+        "width": 1920,
+        "height": 1080,
+        "x": 0,
+        "y": 0,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "visible": false,
+        "url": "canvas.html"
       }
     ],
     "security": {
