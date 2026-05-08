@@ -1,6 +1,7 @@
 pub mod state;
 pub mod overlay;
 pub mod renderer;
+pub mod commands;
 
 use state::new_shared_state;
 
@@ -14,6 +15,16 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_store::Builder::new().build())
         .manage(app_state)
+        .invoke_handler(tauri::generate_handler![
+            commands::set_tool,
+            commands::set_color,
+            commands::set_width,
+            commands::undo,
+            commands::clear_all,
+            commands::toggle_overlay,
+            commands::toggle_click_through,
+            commands::get_app_state,
+        ])
         .setup(move |_app| {
             #[cfg(target_os = "macos")]
             {
