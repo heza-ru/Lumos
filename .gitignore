@@ -12,3 +12,4 @@ src-tauri/target/
 src-tauri/gen/schemas/
 *.orig
 dist/
+.superpowers/
