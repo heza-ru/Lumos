@@ -1,77 +1,123 @@
 <p align="center">
-  <img src="https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/icon.png?raw=true" height="200">
-  <h3 align="center">Draw Pen</h3>
-  <p align="center">An open-source screen annotation tool</p>
+  <img src="LumosLogo.png" height="120" alt="Lumos" />
 </p>
 
+<h1 align="center">Lumos</h1>
+
+<p align="center"><strong>Native macOS screen annotation for live demos, presentations, and teaching.</strong></p>
+
 <p align="center">
-  <a href='https://github.com/DmytroVasin/DrawPen/releases/latest/download/DrawPen.Setup.exe'>
-    <img alt='Get it on Windows' width="134px" src='https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/BadgeWindows.png?raw=true'/>
-  </a>
-  <a href='https://github.com/DmytroVasin/DrawPen/releases/latest/download/DrawPen-0.0.50-arm64.dmg'>
-    <img alt='Get it on macOS' width="134px" src='https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/BadgeMacOS.png?raw=true'/>
-  </a>
-  <a href='https://github.com/DmytroVasin/DrawPen/releases/latest/download/drawpen_0.0.50_amd64.deb'>
-    <img alt='Get it on Linux' width="134px" src='https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/BadgeLinux.png?raw=true'/>
-  </a>
+  <img src="https://img.shields.io/badge/macOS-13%2B-black?logo=apple&logoColor=white" alt="macOS 13+" />
+  <img src="https://img.shields.io/badge/Tauri-2-24C8D8?logo=tauri&logoColor=white" alt="Tauri 2" />
+  <img src="https://img.shields.io/badge/Rust-1.78%2B-CE422B?logo=rust&logoColor=white" alt="Rust" />
+  <img src="https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=white" alt="React 18" />
+  <img src="https://img.shields.io/badge/license-MIT-22c55e" alt="MIT License" />
+  <img src="https://img.shields.io/github/v/release/heza-ru/Lumos?color=8b5cf6" alt="Latest release" />
+  <img src="https://img.shields.io/github/actions/workflow/status/heza-ru/Lumos/release.yml?label=build" alt="Build" />
 </p>
 
 ---
 
-![DrawPen](https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/main.png?raw=true)
+Lumos is a lightweight, keyboard-first macOS annotation overlay built for presenters and educators. Draw, highlight, and focus attention on your screen — then get out of the way — without ever leaving your flow.
 
-![DrawPen - Usage](https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/main.gif?raw=true)
+## Features
 
-![DrawPen - Pointer Mode](https://github.com/DmytroVasin/DrawPen/blob/main/assets/static/pointer-mode.gif?raw=true)
+| Feature | Detail |
+|---------|--------|
+| **Annotation tools** | Pen, Highlighter, Arrow, Rectangle, Ellipse, Laser, Eraser |
+| **Cursor effects** | Glow, Ring, Pulse, Click ripple |
+| **Spotlight mode** | Dim the screen, focus on what matters (circle or rectangle) |
+| **Zoom lens** | Smooth cursor-following magnifier |
+| **Liquid Glass toolbar** | Native `NSGlassEffectView` — Apple's macOS 26 material |
+| **Click-through overlay** | Annotate and interact with apps simultaneously |
+| **Global hotkeys** | Activate from any app, no context switch |
+| **Multi-monitor** | Correct DPI handling across all connected displays |
+| **120fps Skia rendering** | Metal-backed, Retina-correct annotation canvas |
+| **Persistent settings** | Position, colors, and widths remembered between sessions |
 
-### Installation
+## Architecture
 
-You can download DrawPen for **free** from [releases](https://github.com/DmytroVasin/DrawPen/releases)
+```mermaid
+graph TD
+    HK["Global Hotkeys\n⌘⇧A · P · H · A · R · E · L · X"]:::input --> State
 
-Or install via **package managers**:
+    subgraph Rust["Rust Core  (src-tauri)"]
+        State["AppState\nArc&lt;Mutex&gt;"]
+        Overlay["NSPanel Overlay\nalways-on-top · all Spaces"]
+        Skia["Skia Metal Renderer\n120fps draw loop"]
+        Tap["CGEventTap\nmouse capture"]
+        State --> Overlay
+        State --> Skia
+        Tap --> State
+    end
 
-```bash
-# macOS (Homebrew)
-brew install --cask drawpen
+    subgraph UI["React UI  (WebView)"]
+        Toolbar["Liquid Glass Toolbar\nNSGlassEffectView"]
+        Toolbar -->|"IPC invoke"| State
+    end
 
-# Windows (Scoop)
-scoop bucket add extras
-scoop install extras/drawpen
+    Overlay -->|hosts| Skia
+
+    classDef input fill:#1e3a5f,stroke:#3b82f6,color:#93c5fd
 ```
 
-### Known issues
+## Hotkeys
 
-On some Linux setups running **Wayland** (e.g. [Fedora KDE Plasma](https://github.com/DmytroVasin/DrawPen/issues/82), [Zorin](https://github.com/DmytroVasin/DrawPen/issues/81)), DrawPen may start with a **segmentation fault**. [Explanation In Details](https://github.com/IsmaelMartinez/teams-for-linux/blob/1c28e146ca78bcb0ec4df317d7f0684984adf205/docs-site/docs/development/research/wayland-x11-ozone-platform-investigation.md)
+| Action | Shortcut |
+|--------|----------|
+| Toggle annotation overlay | `⌘ ⇧ A` |
+| Switch draw / pointer mode | `⌘ D` |
+| Clear all annotations | `⌘ K` |
+| Undo last stroke | `⌘ Z` |
+| Pen | `P` |
+| Highlighter | `H` |
+| Arrow | `A` |
+| Rectangle | `R` |
+| Ellipse | `E` |
+| Laser pointer | `L` |
+| Eraser | `X` |
+| Spotlight mode | `⇧ S` |
+| Zoom lens | `⇧ Z` |
 
-#### Workaround:
+## Installation
 
-- Run DrawPen with X11 backend: `drawpen --ozone-platform=x11`
-- Use DrawPen `drawpen-x11` package available in [releases](https://github.com/DmytroVasin/DrawPen/releases/latest/)
+Download the latest DMG from [Releases](https://github.com/heza-ru/Lumos/releases/latest).
 
-### Keybindings
+Grant **Accessibility** permission when prompted — required for the global hotkey overlay and mouse capture in draw mode.
 
-| Command                                 | Keybindings                                                  | Comment |
-| --------------------------------------- | ------------------------------------------------------------ | - |
-| Enable Draw/Pointer Mode                | <kbd>CMD/CTRL + SHIFT + A</kbd> | Global shortcut |
-| Activate Pen                            | <kbd>P</kbd> or <kbd>1</kbd> | |
-| Activate/Switch Shapes (Arrow/Square/etc.)   | <kbd>A</kbd>, <kbd>R</kbd>, <kbd>O</kbd> or <kbd>2</kbd> | |
-| Activate Text                           | <kbd>T</kbd> or <kbd>3</kbd> | |
-| Activate Highlighter                    | <kbd>H</kbd> or <kbd>4</kbd> | |
-| Activate Laser                          | <kbd>L</kbd> or <kbd>5</kbd> | |
-| Activate Eraser                         | <kbd>E</kbd> or <kbd>6</kbd> | |
-| Switch Color                            | <kbd>7</kbd> | |
-| Switch Thickness (Width)                | <kbd>8</kbd> | |
-| Show/Hide ToolBar                       | <kbd>CMD/CTRL + T</kbd> | In-app shortcut |
-| Show/Hide Whiteboard                    | <kbd>CMD/CTRL + E</kbd> | In-app shortcut |
-| Clear Desk                              | <kbd>CMD/CTRL + K</kbd> | In-app shortcut |
-| Settings Page                           | <kbd>CMD/CTRL + ,</kbd> | |
-| Reset to original                       | | Resets all app settings <br /> (keys, colors, toolbar position, etc.)  |
+## Building from source
 
-### Contributing
+**Requirements:** Rust 1.78+, Node 22+, pnpm 9+, macOS 13+
 
-Please read our [Contributing Guidelines](CONTRIBUTING.md) for more information.
+```bash
+git clone https://github.com/heza-ru/Lumos
+cd Lumos
+pnpm install
+pnpm tauri build
+```
 
-### License
+The DMG is output to `src-tauri/target/release/bundle/dmg/`.
 
-DrawPen is licensed under the MIT Open Source license.
-For more information, see [LICENSE](LICENSE).
+For development:
+```bash
+pnpm tauri dev
+```
+
+## Tech stack
+
+| Layer | Technology |
+|-------|------------|
+| Window + native APIs | [Tauri 2](https://tauri.app) + Rust |
+| Annotation rendering | [Skia](https://skia.org) via `skia-safe` (Metal backend) |
+| Glass material | [`NSGlassEffectView`](https://developer.apple.com/documentation/appkit/nsglasseffectview) via `tauri-plugin-liquid-glass` |
+| Input capture | macOS `CGEventTap` |
+| UI | React 18 + TypeScript 5 + [Lucide](https://lucide.dev) icons |
+| Build | Vite 6 + `@tauri-apps/cli` |
+
+## Contributing
+
+Issues and PRs welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
