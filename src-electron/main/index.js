@@ -991,6 +991,14 @@ ipcMain.handle('set_pointer_color', (_event, colorIndex) => {
   return null
 })
 
+ipcMain.handle('set_pointer_mode', (_event, enabled) => {
+  rawLog('Pointer mode:', enabled)
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.setIgnoreMouseEvents(enabled, { forward: true })
+  }
+  return null
+})
+
 function refreshSettingsInRenderer() {
   mainWindow.webContents.send('refresh_settings', {
     whiteboard_color:        store.get('whiteboard_color'),

@@ -30,7 +30,8 @@ import {
 import { FaPaintBrush, FaHighlighter, FaRegSquare, FaRegCircle, FaArrowRight, FaLongArrowAltRight, FaEraser, FaRegTrashAlt, FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { AiOutlineLine } from "react-icons/ai";
 import { GiLaserburn } from "react-icons/gi";
-import { MdOutlineClose } from "react-icons/md";
+import { MdOutlineClose, MdOutlineLightMode } from "react-icons/md";
+import { BsZoomIn } from "react-icons/bs";
 import { FaFont } from "react-icons/fa6";
 import { LuSquareMousePointer } from "react-icons/lu";
 import FaMagicPaintBrush from "./components/icons/FaMagicPaintBrush.js";
@@ -67,6 +68,8 @@ const Icons = {
   Trash: FaRegTrashAlt,
   AngleLeft: FaAngleLeft,
   AngleRight: FaAngleRight,
+  Spotlight: MdOutlineLightMode,
+  Zoom: BsZoomIn,
 };
 
 const Application = (settings) => {
@@ -156,6 +159,7 @@ const Application = (settings) => {
   const [zoomActive, setZoomActive] = useState(false);
   const [zoomFactor, setZoomFactor] = useState(2.5);
   const [zoomRadius, setZoomRadius] = useState(90);
+  const [isPointerMode, setIsPointerMode] = useState(false);
   const mainCanvasRef = useRef(null);
 
   useEffect(() => {
@@ -1410,6 +1414,18 @@ const Application = (settings) => {
     window.electronAPI.invokeCloseApp();
   }
 
+  const invokeSetPointerMode = (enabled) => {
+    window.electronAPI.invokeSetPointerMode(enabled);
+  };
+
+  const handleTogglePointerMode = () => {
+    const next = !isPointerMode;
+    setIsPointerMode(next);
+    invokeSetPointerMode(next);
+    // Change cursor: in pointer mode use default cursor, in draw mode use crosshair
+    setCursorType(next ? 'default' : 'crosshair');
+  };
+
   const handleReset = () => {
     console.log('Main -> Renderer: Handle Reset');
 
@@ -1620,21 +1636,21 @@ const Application = (settings) => {
           <ToolBar
             position={toolbarPosition}
             setPosition={setToolbarPosition}
-            toolbarSlide={toolbarSlide}
-            setToolbarSlide={setToolbarSlide}
             isCollapsed={toolbarCollapsed}
             setIsCollapsed={setToolbarCollapsed}
-            lastActiveBrush={toolbarLastActiveBrush}
-            lastActiveFigure={toolbarLastActiveFigure}
             activeTool={activeTool}
             activeColorIndex={activeColorIndex}
             activeWidthIndex={activeWidthIndex}
-            handleCloseToolBar={handleCloseToolBar}
             handleChangeColor={handleChangeColor}
             handleChangeWidth={handleChangeWidth}
             handleChangeTool={handleChangeTool}
             handleClearDesk={handleReset}
-            handleEnablePointerMode={handleEnablePointerMode}
+            isPointerMode={isPointerMode}
+            handleTogglePointerMode={handleTogglePointerMode}
+            spotlightActive={spotlightActive}
+            handleToggleSpotlight={() => setSpotlightActive(prev => !prev)}
+            zoomActive={zoomActive}
+            handleToggleZoom={() => setZoomActive(prev => !prev)}
             Icons={Icons}
           />
       }
