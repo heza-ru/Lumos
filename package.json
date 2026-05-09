@@ -1,28 +1,68 @@
 {
-  "name": "lumos",
+  "name": "lumos-electron",
+  "productName": "Lumos - Electron",
   "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "tauri": "tauri",
-    "tauri:build": "tauri build",
-    "tauri:dev": "tauri dev"
+  "description": "Lumos — native macOS screen annotation (Electron build)",
+  "appId": "com.lumos.electron",
+  "author": {
+    "name": "heza-ru",
+    "email": ""
   },
-  "dependencies": {
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-store": "^2.4.3",
-    "lucide-react": "^1.14.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "tauri-plugin-liquid-glass-api": "^0.1.6"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/heza-ru/Lumos"
+  },
+  "private": true,
+  "license": "MIT",
+  "main": ".webpack/main",
+  "scripts": {
+    "start":           "NODE_ENV=development electron-forge start",
+    "package_no_sign": "electron-forge package -- --no-sign",
+    "package":         "electron-forge package",
+    "make":            "electron-forge make",
+    "publish":         "electron-forge publish"
+  },
+  "config": {
+    "forge": "./tools/forge/forge.config.js"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^2",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "@vitejs/plugin-react": "^4",
-    "typescript": "^5",
-    "vite": "^6"
+    "@babel/core": "^7.25.2",
+    "@babel/preset-react": "^7.24.7",
+    "@electron-forge/cli": "^7.5.0",
+    "@electron-forge/maker-deb": "^7.5.0",
+    "@electron-forge/maker-dmg": "^7.5.0",
+    "@electron-forge/maker-rpm": "^7.5.0",
+    "@electron-forge/maker-squirrel": "^7.5.0",
+    "@electron-forge/maker-zip": "^7.5.0",
+    "@electron-forge/plugin-webpack": "^7.5.0",
+    "@electron-forge/publisher-github": "^7.5.0",
+    "@electron/notarize": "^2.5.0",
+    "@electron/osx-sign": "^1.3.1",
+    "babel-loader": "^9.1.3",
+    "copy-webpack-plugin": "^12.0.2",
+    "css-loader": "^7.1.2",
+    "dotenv": "^16.4.5",
+    "electron": "40.4.0",
+    "sass": "^1.77.8",
+    "sass-loader": "^14.2.1",
+    "style-loader": "^4.0.0",
+    "webpack": "^5.94.0"
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1",
+    "electron-store": "^10.0.0",
+    "lazy-brush": "^2.0.1",
+    "lodash.throttle": "^4.1.1",
+    "perfect-freehand": "^1.2.2",
+    "posthog-node": "^5.21.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-icons": "5.5.0",
+    "update-electron-app": "^3.0.0"
+  },
+  "browserslist": {
+    "development": [
+      "last 1 chrome version"
+    ]
   }
 }
